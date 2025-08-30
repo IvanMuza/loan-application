@@ -4,20 +4,25 @@ import io.r2dbc.pool.ConnectionPool;
 import io.r2dbc.pool.ConnectionPoolConfiguration;
 import io.r2dbc.postgresql.PostgresqlConnectionConfiguration;
 import io.r2dbc.postgresql.PostgresqlConnectionFactory;
+import io.r2dbc.spi.ConnectionFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
+import org.springframework.r2dbc.connection.init.ConnectionFactoryInitializer;
+import org.springframework.r2dbc.connection.init.ResourceDatabasePopulator;
 
 import java.time.Duration;
 
 @Configuration
 public class PostgreSQLConnectionPool {
-    /* Change these values for your project */
-    public static final int INITIAL_SIZE = 12;
-    public static final int MAX_SIZE = 15;
-    public static final int MAX_IDLE_TIME = 30;
-    public static final int DEFAULT_PORT = 5432;
+    public static final int INITIAL_SIZE = 2;
+    public static final int MAX_SIZE = 5;
+    public static final int MAX_IDLE_TIME = 10;
 
 	@Bean
+    @Primary
 	public ConnectionPool getConnectionConfig(PostgresqlConnectionProperties properties) {
 		PostgresqlConnectionConfiguration dbConfiguration = PostgresqlConnectionConfiguration.builder()
                 .host(properties.host())
@@ -39,4 +44,18 @@ public class PostgreSQLConnectionPool {
 
 		return new ConnectionPool(poolConfiguration);
 	}
+
+    @Bean
+    ConnectionFactoryInitializer initializer(ConnectionFactory connectionFactory) {
+        ConnectionFactoryInitializer initializer = new ConnectionFactoryInitializer();
+        initializer.setConnectionFactory(connectionFactory);
+        initializer.setDatabasePopulator(new ResourceDatabasePopulator(new ClassPathResource("schema.sql")));
+
+        return initializer;
+    }
+
+    @Bean
+    public R2dbcEntityTemplate r2dbcEntityTemplate(ConnectionPool connectionPool) {
+        return new R2dbcEntityTemplate(connectionPool);
+    }
 }

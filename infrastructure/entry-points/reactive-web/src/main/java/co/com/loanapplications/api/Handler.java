@@ -19,22 +19,22 @@ import reactor.util.function.Tuples;
 @Component
 @RequiredArgsConstructor
 public class Handler {
-//    private final CreateLoanApplicationUseCase useCase;
-//    private final LoanApplicationMapper mapper;
-//    private final TransactionalOperator tx;
+    private final CreateLoanApplicationUseCase createLoanApplicationUseCase;
+    private final LoanApplicationMapper loanApplicationMapper;
+    private final TransactionalOperator transactionalOperator;
 //
     public Mono<ServerResponse> listenPostUseCase(ServerRequest serverRequest) {
-//        return serverRequest.bodyToMono(CreateLoanApplicationDto.class)
-//                .map(dto -> {
-//                    LoanApplication base = mapper.toDomain(dto);
-//                    return Tuples.of(base, dto.getLoanTypeId());
-//                })
-//                .flatMap(tuple -> useCase.createLoanApplication(tuple.getT1(), tuple.getT2()))
-//                .map(mapper::toResponse)
-//                .flatMap(resp -> ServerResponse.status(HttpStatus.CREATED)
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .bodyValue(resp))
-//                .as(tx::transactional);
-        return ServerResponse.ok().bodyValue("");
+        log.info("listenPostUseCase");
+        return serverRequest.bodyToMono(CreateLoanApplicationDto.class)
+                .map(loanApplicationMapper::toDomain)
+                .flatMap(createLoanApplicationUseCase::createLoanApplication)
+                .map(loanApplicationMapper::toResponse)
+                .flatMap(loanApplicationResponse -> {
+                    log.info("Successfully created user: {}", loanApplicationResponse.getClass());
+                    return ServerResponse
+                            .status(HttpStatus.CREATED.value())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .bodyValue(loanApplicationResponse);
+                }).as(transactionalOperator::transactional);
     }
 }

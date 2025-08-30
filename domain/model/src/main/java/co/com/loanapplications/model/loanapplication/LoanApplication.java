@@ -16,9 +16,8 @@ import java.time.LocalDateTime;
 public class LoanApplication {
     private Long id;
     private Double amount;
-    private Integer term;
+    private Integer termMonths;
     private String email;
-    private String documentId;
 
     private ApplicationStatus status;
     private LoanType loanType;

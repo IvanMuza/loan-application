@@ -16,7 +16,6 @@ import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
 
-@Slf4j
 @RequiredArgsConstructor
 public class CreateLoanApplicationUseCase {
     private final LoanApplicationRepository loanApplicationRepository;
@@ -32,7 +31,7 @@ public class CreateLoanApplicationUseCase {
             return Mono.error(new ValidationException(ErrorCodesEnum.AMOUNT_REQUIRED.getCode(),
                     ErrorCodesEnum.AMOUNT_REQUIRED.getDefaultMessage()));
         }
-        if (input.getTerm() == null) {
+        if (input.getTermMonths() == null) {
             return Mono.error(new ValidationException(ErrorCodesEnum.TERM_REQUIRED.getCode(),
                     ErrorCodesEnum.TERM_REQUIRED.getDefaultMessage()));
         }
@@ -47,10 +46,6 @@ public class CreateLoanApplicationUseCase {
         if (loanTypeId == null) {
             return Mono.error(new ValidationException(ErrorCodesEnum.LOAN_TYPE_REQUIRED.getCode(),
                     ErrorCodesEnum.LOAN_TYPE_REQUIRED.getDefaultMessage()));
-        }
-        if (input.getDocumentId() == null || input.getDocumentId().isBlank()) {
-            return Mono.error(new ValidationException(ErrorCodesEnum.DOCUMENT_ID_REQUIRED.getCode(),
-                    ErrorCodesEnum.DOCUMENT_ID_REQUIRED.getDefaultMessage()));
         }
 
         return loanTypeRepository.findById(loanTypeId)
@@ -82,9 +77,6 @@ public class CreateLoanApplicationUseCase {
                         .build()
                 )
                 .flatMap(loanApplicationRepository::save);
-//                .doOnSuccess(a -> log.info("Loan application {} created", a.getId())
-//                .doOnError(e -> log.error("Error creating loan application: {}", e))
-//                );
 
     }
 
