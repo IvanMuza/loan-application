@@ -5,7 +5,7 @@ public class LoanApplicationResponseDto {
     private Double amount;
     private Integer termMonths;
     private String email;
-    private String status;
+    private Long statusId;
     private Long loanTypeId;
     private String loanTypeName;
 }

@@ -19,8 +19,8 @@ public class LoanApplication {
     private Integer termMonths;
     private String email;
 
-    private ApplicationStatus status;
-    private LoanType loanType;
+    private ApplicationStatus statusId;
+    private LoanType loanTypeId;
 
     private LocalDateTime createdAt;
 }

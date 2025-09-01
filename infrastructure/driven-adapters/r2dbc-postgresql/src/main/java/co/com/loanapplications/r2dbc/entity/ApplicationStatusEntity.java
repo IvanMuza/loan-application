@@ -10,34 +10,20 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
-import java.time.LocalDate;
-
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "loan_application")
-public class LoanApplicationEntity {
+@Table(name = "application_status")
+public class ApplicationStatusEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column("id")
     private Long id;
 
-    @Column("amount")
-    private Double amount;
+    @Column("name")
+    private Double name;
 
-    @Column("termMonths")
-    private Integer termMonths;
-
-    @Column("email")
-    private String email;
-
-    @Column("status_id")
-    private Long statusId;
-
-    @Column("loan_type_id")
-    private Long loanTypeId;
-
-    @Column("created_at")
-    private LocalDate createdAt;
+    @Column("description")
+    private String description;
 }

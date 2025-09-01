@@ -11,7 +11,6 @@ import co.com.loanapplications.model.loanapplication.gateways.LoanApplicationRep
 import co.com.loanapplications.model.loanapplication.gateways.LoanTypeRepository;
 import co.com.loanapplications.usecase.createloanapplication.helpers.EmailValidator;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
@@ -72,7 +71,7 @@ public class CreateLoanApplicationUseCase {
                                             .build()));
                 })
                 .map(initialStatus -> input.toBuilder()
-                        .status(initialStatus)
+                        .statusId(initialStatus)
                         .createdAt(LocalDateTime.now())
                         .build()
                 )
