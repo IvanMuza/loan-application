@@ -18,7 +18,5 @@ public class LoanTypeReactiveRepositoryAdapter
     }
 
     @Override
-    public Mono<Boolean> existsById(Long id) {
-        return this.repository.existsById(id);
-    }
+    public Mono<LoanType> findByName(String name) { return this.repository.findByName(name); }
 }

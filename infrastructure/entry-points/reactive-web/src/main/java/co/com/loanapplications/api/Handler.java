@@ -2,6 +2,7 @@ package co.com.loanapplications.api;
 
 import co.com.loanapplications.api.dtos.CreateLoanApplicationDto;
 import co.com.loanapplications.api.mappers.LoanApplicationMapper;
+import co.com.loanapplications.model.loanapplication.LoanApplication;
 import co.com.loanapplications.usecase.createloanapplication.CreateLoanApplicationUseCase;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,11 +25,13 @@ public class Handler {
     public Mono<ServerResponse> listenPostCreateLoanApplication(ServerRequest serverRequest) {
         log.info("listenPostUseCase");
         return serverRequest.bodyToMono(CreateLoanApplicationDto.class)
-                .map(loanApplicationMapper::toDomain)
-                .flatMap(createLoanApplicationUseCase::createLoanApplication)
+                .flatMap(dto -> {
+                    LoanApplication loanApp = loanApplicationMapper.toDomain(dto);
+                    return createLoanApplicationUseCase.createLoanApplication(loanApp, dto.getLoanType());
+                })
                 .map(loanApplicationMapper::toResponse)
                 .flatMap(loanApplicationResponseDto -> {
-                    log.info("Successfully created loan application: {}", loanApplicationResponseDto.getClass());
+                    log.info("Successfully created loan application for user: {}", loanApplicationResponseDto.getEmail());
                     return ServerResponse
                             .status(HttpStatus.CREATED.value())
                             .contentType(MediaType.APPLICATION_JSON)

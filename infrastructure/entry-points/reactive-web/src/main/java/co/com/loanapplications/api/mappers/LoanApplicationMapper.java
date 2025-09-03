@@ -12,6 +12,5 @@ public interface LoanApplicationMapper {
     @Mapping(target = "statusId", ignore = true)
     LoanApplication toDomain(CreateLoanApplicationDto request);
 
-    @Mapping(target = "loanType", ignore = true)
     LoanApplicationResponseDto toResponse(LoanApplication application);
 }

@@ -2,7 +2,6 @@ package co.com.loanapplications.usecase.createloanapplication;
 
 import co.com.loanapplications.model.loanapplication.ApplicationStatus;
 import co.com.loanapplications.model.loanapplication.LoanApplication;
-import co.com.loanapplications.model.loanapplication.LoanType;
 import co.com.loanapplications.model.loanapplication.enums.ErrorCodesEnum;
 import co.com.loanapplications.model.loanapplication.enums.PredefinedStatusesEnum;
 import co.com.loanapplications.model.loanapplication.exceptions.NotFoundException;
@@ -15,8 +14,6 @@ import co.com.loanapplications.usecase.createloanapplication.helpers.EmailValida
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
 
-import java.time.LocalDateTime;
-
 @RequiredArgsConstructor
 public class CreateLoanApplicationUseCase {
     private final LoanApplicationRepository loanApplicationRepository;
@@ -24,7 +21,7 @@ public class CreateLoanApplicationUseCase {
     private final ApplicationStatusRepository statusRepository;
     private final IdentityRepository identityRepository;
 
-    public Mono<LoanApplication> createLoanApplication(LoanApplication loanApplication) {
+    public Mono<LoanApplication> createLoanApplication(LoanApplication loanApplication, String loanTypeName) {
 
         if (loanApplication == null) {
             return Mono.error(new ValidationException(ErrorCodesEnum.APPLICATION_REQUIRED.getCode(),
@@ -46,47 +43,47 @@ public class CreateLoanApplicationUseCase {
             return Mono.error(new ValidationException(ErrorCodesEnum.EMAIL_INVALID.getCode(),
                     ErrorCodesEnum.EMAIL_INVALID.getDefaultMessage()));
         }
-        if (loanApplication.getLoanTypeId() == null) {
-            return Mono.error(new ValidationException(ErrorCodesEnum.LOAN_TYPE_REQUIRED.getCode(),
-                    ErrorCodesEnum.LOAN_TYPE_REQUIRED.getDefaultMessage()));
-        }
 
-
-        return identityRepository.emailExists(loanApplication.getEmail())
-                .flatMap(exists -> {
-                    if (!exists) {
-                        return Mono.error(new NotFoundException(
-                                ErrorCodesEnum.USER_EMAIL_NOT_FOUND.getCode(),
-                                ErrorCodesEnum.USER_EMAIL_NOT_FOUND.getDefaultMessage()));
-                    }
-                    return loanTypeRepository.findById(loanApplication.getLoanTypeId())
-                            .switchIfEmpty(Mono.error(new NotFoundException(
-                                    ErrorCodesEnum.LOAN_TYPE_NOT_FOUND.getCode(),
-                                    ErrorCodesEnum.LOAN_TYPE_NOT_FOUND.getDefaultMessage()
-                            )));
-                })
+        return loanTypeRepository.findByName(loanTypeName)
+                .switchIfEmpty(Mono.error(new NotFoundException(
+                        ErrorCodesEnum.LOAN_TYPE_NOT_FOUND.getCode(),
+                        ErrorCodesEnum.LOAN_TYPE_NOT_FOUND.getDefaultMessage()
+                )))
                 .flatMap(loanType -> {
-                    Double min = loanType.getMinAmount();
-                    Double max = loanType.getMaxAmount();
-                    Double amount = loanApplication.getAmount();
+                    LoanApplication updatedLoanApp = loanApplication.toBuilder()
+                            .loanTypeId(loanType.getId())
+                            .build();
 
-                    if ((min != null && amount < min) || (max != null && amount > max)) {
-                        return Mono.error(new ValidationException(
-                                ErrorCodesEnum.AMOUNT_OUT_OF_RANGE.getCode(),
-                                ErrorCodesEnum.AMOUNT_OUT_OF_RANGE.getDefaultMessage()));
-                    }
-                    return statusRepository.findById(PredefinedStatusesEnum.PENDING_REVIEW.getId())
-                            .switchIfEmpty(Mono.fromSupplier(() ->
-                                    ApplicationStatus.builder()
-                                            .name(PredefinedStatusesEnum.PENDING_REVIEW.getName())
-                                            .description(PredefinedStatusesEnum.PENDING_REVIEW.getDescription())
-                                            .build()))
-                            .map(initialStatus -> loanApplication.toBuilder()
-                                    .statusId(initialStatus.getId())
-                                    .build());
-                })
-                .flatMap(loanApplicationRepository::save);
+                    return identityRepository.emailExists(updatedLoanApp.getEmail())
+                            .flatMap(exists -> {
+                                if (!exists) {
+                                    return Mono.error(new NotFoundException(
+                                            ErrorCodesEnum.USER_EMAIL_NOT_FOUND.getCode(),
+                                            ErrorCodesEnum.USER_EMAIL_NOT_FOUND.getDefaultMessage()));
+                                }
+                                Double min = loanType.getMinAmount();
+                                Double max = loanType.getMaxAmount();
+                                Double amount = updatedLoanApp.getAmount();
 
+                                if ((min != null && amount < min) || (max != null && amount > max)) {
+                                    return Mono.error(new ValidationException(
+                                            ErrorCodesEnum.AMOUNT_OUT_OF_RANGE.getCode(),
+                                            ErrorCodesEnum.AMOUNT_OUT_OF_RANGE.getDefaultMessage()));
+                                }
+
+                                return statusRepository.findById(PredefinedStatusesEnum.PENDING_REVIEW.getId())
+                                        .switchIfEmpty(Mono.fromSupplier(() ->
+                                                ApplicationStatus.builder()
+                                                        .name(PredefinedStatusesEnum.PENDING_REVIEW.getName())
+                                                        .description(PredefinedStatusesEnum.PENDING_REVIEW.getDescription())
+                                                        .build()))
+                                        .map(initialStatus -> updatedLoanApp.toBuilder()
+                                                .statusId(initialStatus.getId())
+                                                .build());
+                            })
+                            .flatMap(loanApplicationRepository::save);
+
+                });
     }
 
 }
