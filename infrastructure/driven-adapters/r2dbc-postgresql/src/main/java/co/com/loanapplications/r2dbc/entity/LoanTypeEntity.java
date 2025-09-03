@@ -24,12 +24,12 @@ public class LoanTypeEntity {
     private Long id;
 
     @Column("name")
-    private Double name;
+    private String name;
 
     @Column("min_amount")
     private Double minAmount;
 
-    @Column("maxAmount")
+    @Column("max_amount")
     private Double maxAmount;
 
     @Column("interest_rate")

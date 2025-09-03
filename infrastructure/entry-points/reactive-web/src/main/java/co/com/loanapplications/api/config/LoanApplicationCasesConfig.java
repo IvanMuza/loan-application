@@ -1,6 +1,7 @@
 package co.com.loanapplications.api.config;
 
 import co.com.loanapplications.model.loanapplication.gateways.ApplicationStatusRepository;
+import co.com.loanapplications.model.loanapplication.gateways.IdentityRepository;
 import co.com.loanapplications.model.loanapplication.gateways.LoanApplicationRepository;
 import co.com.loanapplications.model.loanapplication.gateways.LoanTypeRepository;
 import co.com.loanapplications.usecase.createloanapplication.CreateLoanApplicationUseCase;
@@ -13,7 +14,9 @@ public class LoanApplicationCasesConfig {
     public CreateLoanApplicationUseCase createLoanApplicationUseCase(
             LoanApplicationRepository loanApplicationRepository,
             LoanTypeRepository loanTypeRepository,
-            ApplicationStatusRepository applicationStatusRepository) {
-        return new CreateLoanApplicationUseCase(loanApplicationRepository, loanTypeRepository, applicationStatusRepository);
+            ApplicationStatusRepository applicationStatusRepository,
+            IdentityRepository identityRepository) {
+        return new CreateLoanApplicationUseCase(
+                loanApplicationRepository, loanTypeRepository, applicationStatusRepository, identityRepository);
     }
 }

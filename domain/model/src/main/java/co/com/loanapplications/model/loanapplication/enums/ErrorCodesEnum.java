@@ -14,7 +14,8 @@ public enum ErrorCodesEnum {
     LOAN_TYPE_REQUIRED("LOAN_TYPE_REQUIRED", "Loan type is required"),
     LOAN_TYPE_NOT_FOUND("LOAN_TYPE_NOT_FOUND", "Selected loan type was not found"),
     AMOUNT_OUT_OF_RANGE("AMOUNT_OUT_OF_RANGE", "Amount is out of allowed range for the selected loan type"),
-    EMAIL_INVALID("EMAIL_INVALID", "Email is not valid");
+    EMAIL_INVALID("EMAIL_INVALID", "Email is not valid"),
+    USER_EMAIL_NOT_FOUND("USER_EMAIL_NOT_FOUND", "User not found with provided email"),;
 
     private final String code;
     private final String defaultMessage;

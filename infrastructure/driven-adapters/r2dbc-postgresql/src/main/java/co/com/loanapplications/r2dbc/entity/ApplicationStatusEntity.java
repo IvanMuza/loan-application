@@ -22,7 +22,7 @@ public class ApplicationStatusEntity {
     private Long id;
 
     @Column("name")
-    private Double name;
+    private String name;
 
     @Column("description")
     private String description;

@@ -1,10 +1,11 @@
 package co.com.loanapplications.api.dtos;
 
+import lombok.Data;
 
+@Data
 public class CreateLoanApplicationDto {
+    private String email;
     private Double amount;
     private Integer termMonths;
-    private String email;
-    private Long statusId;
-    private Long loanTypeId;
+    private String loanType;
 }

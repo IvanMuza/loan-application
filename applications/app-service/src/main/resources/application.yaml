@@ -18,3 +18,9 @@ spring:
       password: ${DB_PASSWORD}
 cors:
   allowed-origins: "http://localhost:8081"
+authentication:
+  client:
+    base-url: "http://localhost:8080"
+    exists-path: "/api/v1/users/exists/{email}"
+    connect-timeout-ms: 3000
+    read-timeout-sec: 3

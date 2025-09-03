@@ -26,7 +26,7 @@ public class LoanApplicationEntity {
     @Column("amount")
     private Double amount;
 
-    @Column("termMonths")
+    @Column("term_months")
     private Integer termMonths;
 
     @Column("email")
@@ -37,7 +37,4 @@ public class LoanApplicationEntity {
 
     @Column("loan_type_id")
     private Long loanTypeId;
-
-    @Column("created_at")
-    private LocalDate createdAt;
 }

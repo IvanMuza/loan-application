@@ -18,9 +18,6 @@ public class LoanApplication {
     private Double amount;
     private Integer termMonths;
     private String email;
-
-    private ApplicationStatus statusId;
-    private LoanType loanTypeId;
-
-    private LocalDateTime createdAt;
+    private Long statusId;
+    private Long loanTypeId;
 }

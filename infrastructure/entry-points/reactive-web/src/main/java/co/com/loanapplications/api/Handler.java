@@ -2,7 +2,6 @@ package co.com.loanapplications.api;
 
 import co.com.loanapplications.api.dtos.CreateLoanApplicationDto;
 import co.com.loanapplications.api.mappers.LoanApplicationMapper;
-import co.com.loanapplications.model.loanapplication.LoanApplication;
 import co.com.loanapplications.usecase.createloanapplication.CreateLoanApplicationUseCase;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,7 +12,6 @@ import org.springframework.transaction.reactive.TransactionalOperator;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
-import reactor.util.function.Tuples;
 
 @Slf4j
 @Component
@@ -22,19 +20,19 @@ public class Handler {
     private final CreateLoanApplicationUseCase createLoanApplicationUseCase;
     private final LoanApplicationMapper loanApplicationMapper;
     private final TransactionalOperator transactionalOperator;
-//
-    public Mono<ServerResponse> listenPostUseCase(ServerRequest serverRequest) {
+
+    public Mono<ServerResponse> listenPostCreateLoanApplication(ServerRequest serverRequest) {
         log.info("listenPostUseCase");
         return serverRequest.bodyToMono(CreateLoanApplicationDto.class)
                 .map(loanApplicationMapper::toDomain)
                 .flatMap(createLoanApplicationUseCase::createLoanApplication)
                 .map(loanApplicationMapper::toResponse)
-                .flatMap(loanApplicationResponse -> {
-                    log.info("Successfully created user: {}", loanApplicationResponse.getClass());
+                .flatMap(loanApplicationResponseDto -> {
+                    log.info("Successfully created loan application: {}", loanApplicationResponseDto.getClass());
                     return ServerResponse
                             .status(HttpStatus.CREATED.value())
                             .contentType(MediaType.APPLICATION_JSON)
-                            .bodyValue(loanApplicationResponse);
+                            .bodyValue(loanApplicationResponseDto);
                 }).as(transactionalOperator::transactional);
     }
 }

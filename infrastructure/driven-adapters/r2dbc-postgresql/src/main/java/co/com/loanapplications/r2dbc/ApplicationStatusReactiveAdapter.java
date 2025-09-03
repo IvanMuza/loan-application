@@ -17,7 +17,8 @@ public class ApplicationStatusReactiveAdapter
     }
 
     @Override
-    public Mono<Boolean> existsById(Long id) {
-        return this.repository.existsById(id);
+    public Mono<ApplicationStatus> findById(Long id){
+        return this.repository.findById(id)
+                .map(entity -> mapper.map(entity, ApplicationStatus.class));
     }
 }
