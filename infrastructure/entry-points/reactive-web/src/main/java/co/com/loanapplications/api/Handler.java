@@ -23,7 +23,7 @@ public class Handler {
     private final TransactionalOperator transactionalOperator;
 
     public Mono<ServerResponse> listenPostCreateLoanApplication(ServerRequest serverRequest) {
-        log.info("listenPostUseCase");
+        log.info("listenPostUseCase"); //TODO: WebFilter, improve logs
         return serverRequest.bodyToMono(CreateLoanApplicationDto.class)
                 .flatMap(dto -> {
                     LoanApplication loanApp = loanApplicationMapper.toDomain(dto);

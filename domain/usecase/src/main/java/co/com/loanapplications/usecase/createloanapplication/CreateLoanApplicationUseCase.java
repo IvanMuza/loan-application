@@ -71,7 +71,7 @@ public class CreateLoanApplicationUseCase {
                                             ErrorCodesEnum.AMOUNT_OUT_OF_RANGE.getDefaultMessage()));
                                 }
 
-                                return statusRepository.findById(PredefinedStatusesEnum.PENDING_REVIEW.getId())
+                                return statusRepository.findByName(PredefinedStatusesEnum.PENDING_REVIEW.getName())
                                         .switchIfEmpty(Mono.fromSupplier(() ->
                                                 ApplicationStatus.builder()
                                                         .name(PredefinedStatusesEnum.PENDING_REVIEW.getName())

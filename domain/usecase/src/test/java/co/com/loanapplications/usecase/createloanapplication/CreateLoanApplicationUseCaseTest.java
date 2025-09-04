@@ -16,7 +16,6 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
 class CreateLoanApplicationUseCaseTest {
@@ -64,8 +63,8 @@ class CreateLoanApplicationUseCaseTest {
 
         when(loanTypeRepository.findByName("PERSONAL")).thenReturn(Mono.just(loanType));
         when(identityRepository.emailExists(loanApp.getEmail())).thenReturn(Mono.just(true));
-        when(statusRepository.findById(anyLong())).thenReturn(Mono.just(
-                ApplicationStatus.builder().id(100L).name("PENDING_REVIEW").build()
+        when(statusRepository.findByName("PENDING_REVIEW")).thenReturn(Mono.just(
+                ApplicationStatus.builder().id(2L).name("PENDING_REVIEW").build()
         ));
         when(loanApplicationRepository.save(any())).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
 
