@@ -6,9 +6,10 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum PredefinedStatusesEnum {
-    PENDING_REVIEW(2L, "PENDING_REVIEW", "Pending review");
+    ACTIVE("ACTIVE", "Active application"),
+    PENDING_REVIEW("PENDING_REVIEW", "Pending review"),
+    COMPLETED("COMPLETED", "Application completed");
 
-    private final Long id;
     private final String name;
     private final String description;
 }
