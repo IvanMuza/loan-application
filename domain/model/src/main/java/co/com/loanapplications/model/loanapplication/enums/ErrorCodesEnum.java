@@ -15,7 +15,9 @@ public enum ErrorCodesEnum {
     LOAN_TYPE_NOT_FOUND("LOAN_TYPE_NOT_FOUND", "Selected loan type was not found"),
     AMOUNT_OUT_OF_RANGE("AMOUNT_OUT_OF_RANGE", "Amount is out of allowed range for the selected loan type"),
     EMAIL_INVALID("EMAIL_INVALID", "Email is not valid"),
-    USER_EMAIL_NOT_FOUND("USER_EMAIL_NOT_FOUND", "User not found with provided email"),;
+    USER_EMAIL_NOT_FOUND("USER_EMAIL_NOT_FOUND", "User not found with provided email"),
+    USER_NOT_AUTHORIZED("USER_NOT_AUTHORIZED", "User not authorized to perform this operation"),
+    USER_APPLICATION_NOT_MATCH("USER_APPLICATION_NOT_MATCH", "You can only create a loan application for your own account");
 
     private final String code;
     private final String defaultMessage;
