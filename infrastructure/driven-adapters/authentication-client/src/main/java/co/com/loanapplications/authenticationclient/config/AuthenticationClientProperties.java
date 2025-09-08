@@ -8,6 +8,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class AuthenticationClientProperties {
     private String baseUrl = "http://localhost:8080";
     private String existsPath = "/api/v1/users/exists/{email}";
+    private String findByEmailPath = "/api/v1/users/email/{email}";
     private int connectTimeoutMs = 3000;
     private int readTimeoutSec = 3;
 }

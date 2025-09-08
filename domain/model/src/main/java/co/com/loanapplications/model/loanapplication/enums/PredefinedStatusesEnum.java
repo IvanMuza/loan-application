@@ -7,8 +7,10 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum PredefinedStatusesEnum {
     ACTIVE("ACTIVE", "Active application"),
-    PENDING_REVIEW("PENDING_REVIEW", "Pending review"),
-    COMPLETED("COMPLETED", "Application completed");
+    PENDING_REVIEW("PENDING_REVIEW", "Application in pending review"),
+    APPROVED("APPROVED", "Application approved"),
+    REJECTED("REJECTED", "Application rejected"),
+    MANUAL_REVIEW("MANUAL_REVIEW", "Manual review");
 
     private final String name;
     private final String description;
