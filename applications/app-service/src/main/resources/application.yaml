@@ -24,6 +24,7 @@ authentication:
     exists-path: "/api/v1/users/exists/{email}"
     connect-timeout-ms: 3000
     read-timeout-sec: 3
+    find-by-email-path: "/api/v1/users/email/{email}"
 security:
   jwt:
     secret: ${JWT_SECRET}

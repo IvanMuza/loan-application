@@ -1,6 +1,7 @@
 package co.com.loanapplications.authenticationclient;
 
 import co.com.loanapplications.authenticationclient.config.AuthenticationClientProperties;
+import co.com.loanapplications.model.loanapplication.identity.UserDto;
 import co.com.loanapplications.model.loanapplication.gateways.IdentityRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -35,8 +36,26 @@ public class AuthenticationClientAdapter implements IdentityRepository {
                         .retrieve()
                         .bodyToMono(Boolean.class)
                 )
-                .onErrorResume(e -> {
-                    return Mono.just(false);
-                });
+                .onErrorResume(e -> Mono.just(false));
+    }
+
+    @Override
+    public Mono<UserDto> findByEmail(String email) {
+        return ReactiveSecurityContextHolder.getContext()
+                .map(SecurityContext::getAuthentication)
+                .filter(auth -> auth instanceof JwtAuthenticationToken)
+                .cast(JwtAuthenticationToken.class)
+                .map(JwtAuthenticationToken::getToken)
+                .map(Jwt::getTokenValue)
+                .flatMap(token -> webClientBuilder.build()
+                        .get()
+                        .uri(uriBuilder -> uriBuilder
+                                .path(props.getFindByEmailPath())
+                                .build(email))
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                        .retrieve()
+                        .bodyToMono(UserDto.class)
+                )
+                .onErrorResume(e -> Mono.empty());
     }
 }

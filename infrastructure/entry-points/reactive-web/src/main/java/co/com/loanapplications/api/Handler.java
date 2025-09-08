@@ -6,6 +6,7 @@ import co.com.loanapplications.model.loanapplication.LoanApplication;
 import co.com.loanapplications.model.loanapplication.enums.ErrorCodesEnum;
 import co.com.loanapplications.model.loanapplication.exceptions.ForbiddenException;
 import co.com.loanapplications.usecase.createloanapplication.CreateLoanApplicationUseCase;
+import co.com.loanapplications.usecase.createloanapplication.ListLoanApplicationsUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -22,6 +23,7 @@ public class Handler {
     private final CreateLoanApplicationUseCase createLoanApplicationUseCase;
     private final LoanApplicationMapper loanApplicationMapper;
     private final TransactionalOperator transactionalOperator;
+    private final ListLoanApplicationsUseCase listLoanApplicationsUseCase;
 
     public Mono<ServerResponse> listenPostCreateLoanApplication(ServerRequest serverRequest) {
         return serverRequest.principal()
@@ -51,5 +53,17 @@ public class Handler {
                         .contentType(MediaType.APPLICATION_JSON)
                         .bodyValue(resp))
                 .as(transactionalOperator::transactional);
+    }
+
+    public Mono<ServerResponse> listenGetListLoanApplications(ServerRequest request) {
+        int page = Integer.parseInt(request.queryParam("page").orElse("0"));
+        int size = Integer.parseInt(request.queryParam("size").orElse("10"));
+        String statusFilter = request.queryParam("statusFilter").orElse(null);
+
+        return listLoanApplicationsUseCase.list(page, size, statusFilter)
+                .flatMap(dto ->
+                        ServerResponse.ok()
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .bodyValue(dto));
     }
 }
