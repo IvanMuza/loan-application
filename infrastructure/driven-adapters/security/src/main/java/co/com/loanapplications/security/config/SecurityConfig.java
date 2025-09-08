@@ -1,5 +1,8 @@
 package co.com.loanapplications.security.config;
 
+import co.com.loanapplications.model.loanapplication.enums.ErrorCodesEnum;
+import co.com.loanapplications.model.loanapplication.exceptions.UserNotAuthenticatedException;
+import co.com.loanapplications.model.loanapplication.exceptions.UserNotAuthorizedException;
 import co.com.loanapplications.security.ReactiveJwtAuthenticationConverter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,6 +15,7 @@ import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.NimbusReactiveJwtDecoder;
 import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder;
 import org.springframework.security.web.server.SecurityWebFilterChain;
+import reactor.core.publisher.Mono;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
@@ -47,6 +51,20 @@ public class SecurityConfig {
                         .pathMatchers("/swagger-ui.html", "/v3/api-docs/**", "/webjars/swagger-ui/**").permitAll()
                         .pathMatchers(HttpMethod.GET, "/api/v1/loan-application/list").hasRole("Consultant")
                         .anyExchange().authenticated()
+                )
+
+                .exceptionHandling(exceptionHandling -> exceptionHandling
+                        .accessDeniedHandler((exchange, denied) ->
+                                Mono.error(new UserNotAuthorizedException(
+                                        ErrorCodesEnum.USER_NOT_AUTHORIZED_TO_CREATE.getCode(),
+                                        ErrorCodesEnum.USER_NOT_AUTHORIZED_TO_CREATE.getDefaultMessage()
+                                )))
+                        .authenticationEntryPoint((exchange, e) ->
+                                Mono.error(new UserNotAuthenticatedException(
+                                        ErrorCodesEnum.USER_NOT_AUTHENTICATED.getCode(),
+                                        ErrorCodesEnum.USER_NOT_AUTHENTICATED.getDefaultMessage()
+                                ))
+                        )
                 )
                 .build();
     }

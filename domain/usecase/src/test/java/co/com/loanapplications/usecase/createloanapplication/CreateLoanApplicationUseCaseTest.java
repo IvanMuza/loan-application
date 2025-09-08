@@ -50,7 +50,7 @@ class CreateLoanApplicationUseCaseTest {
     private LoanType buildValidLoanType() {
         return LoanType.builder()
                 .id(1L)
-                .name("PERSONAL")
+                .name("Basic")
                 .minAmount(1_000_000D)
                 .maxAmount(10_000_000D)
                 .build();
@@ -61,14 +61,14 @@ class CreateLoanApplicationUseCaseTest {
         LoanApplication loanApp = buildValidLoanApplication();
         LoanType loanType = buildValidLoanType();
 
-        when(loanTypeRepository.findByName("PERSONAL")).thenReturn(Mono.just(loanType));
+        when(loanTypeRepository.findByName("Basic")).thenReturn(Mono.just(loanType));
         when(identityRepository.emailExists(loanApp.getEmail())).thenReturn(Mono.just(true));
         when(statusRepository.findByName("PENDING_REVIEW")).thenReturn(Mono.just(
                 ApplicationStatus.builder().id(2L).name("PENDING_REVIEW").build()
         ));
         when(loanApplicationRepository.save(any())).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
 
-        StepVerifier.create(createLoanApplicationUseCase.createLoanApplication(loanApp, "PERSONAL"))
+        StepVerifier.create(createLoanApplicationUseCase.createLoanApplication(loanApp, "Basic"))
                 .expectNextMatches(saved -> saved.getLoanTypeId().equals(loanType.getId()))
                 .verifyComplete();
 
@@ -89,7 +89,7 @@ class CreateLoanApplicationUseCaseTest {
         LoanApplication loanApp = buildValidLoanApplication();
         loanApp.setAmount(null);
 
-        StepVerifier.create(createLoanApplicationUseCase.createLoanApplication(loanApp, "PERSONAL"))
+        StepVerifier.create(createLoanApplicationUseCase.createLoanApplication(loanApp, "Basic"))
                 .expectError(ValidationException.class)
                 .verify();
 
@@ -101,7 +101,7 @@ class CreateLoanApplicationUseCaseTest {
         LoanApplication loanApp = buildValidLoanApplication();
         loanApp.setEmail("invalid-email");
 
-        StepVerifier.create(createLoanApplicationUseCase.createLoanApplication(loanApp, "PERSONAL"))
+        StepVerifier.create(createLoanApplicationUseCase.createLoanApplication(loanApp, "Basic"))
                 .expectError(ValidationException.class)
                 .verify();
 
@@ -126,10 +126,10 @@ class CreateLoanApplicationUseCaseTest {
         LoanApplication loanApp = buildValidLoanApplication();
         LoanType loanType = buildValidLoanType();
 
-        when(loanTypeRepository.findByName("PERSONAL")).thenReturn(Mono.just(loanType));
+        when(loanTypeRepository.findByName("Basic")).thenReturn(Mono.just(loanType));
         when(identityRepository.emailExists(loanApp.getEmail())).thenReturn(Mono.just(false));
 
-        StepVerifier.create(createLoanApplicationUseCase.createLoanApplication(loanApp, "PERSONAL"))
+        StepVerifier.create(createLoanApplicationUseCase.createLoanApplication(loanApp, "Basic"))
                 .expectError(NotFoundException.class)
                 .verify();
     }
@@ -140,10 +140,10 @@ class CreateLoanApplicationUseCaseTest {
         loanApp.setAmount(50_000_000D);
         LoanType loanType = buildValidLoanType();
 
-        when(loanTypeRepository.findByName("PERSONAL")).thenReturn(Mono.just(loanType));
+        when(loanTypeRepository.findByName("Basic")).thenReturn(Mono.just(loanType));
         when(identityRepository.emailExists(loanApp.getEmail())).thenReturn(Mono.just(true));
 
-        StepVerifier.create(createLoanApplicationUseCase.createLoanApplication(loanApp, "PERSONAL"))
+        StepVerifier.create(createLoanApplicationUseCase.createLoanApplication(loanApp, "Basic"))
                 .expectError(ValidationException.class)
                 .verify();
     }
