@@ -2,10 +2,8 @@ package co.com.loanapplications.usecase.createloanapplication;
 
 import co.com.loanapplications.model.loanapplication.ApplicationStatus;
 import co.com.loanapplications.model.loanapplication.LoanApplication;
-import co.com.loanapplications.model.loanapplication.enums.ErrorCodesEnum;
 import co.com.loanapplications.model.loanapplication.enums.PredefinedStatusesEnum;
-import co.com.loanapplications.model.loanapplication.exceptions.NotFoundException;
-import co.com.loanapplications.model.loanapplication.exceptions.ValidationException;
+import co.com.loanapplications.model.loanapplication.exceptions.*;
 import co.com.loanapplications.model.loanapplication.gateways.ApplicationStatusRepository;
 import co.com.loanapplications.model.loanapplication.gateways.IdentityRepository;
 import co.com.loanapplications.model.loanapplication.gateways.LoanApplicationRepository;
@@ -24,31 +22,23 @@ public class CreateLoanApplicationUseCase {
     public Mono<LoanApplication> createLoanApplication(LoanApplication loanApplication, String loanTypeName) {
 
         if (loanApplication == null) {
-            return Mono.error(new ValidationException(ErrorCodesEnum.APPLICATION_REQUIRED.getCode(),
-                    ErrorCodesEnum.APPLICATION_REQUIRED.getDefaultMessage()));
+            return Mono.error(new LoanApplicationNotValidException());
         }
         if (loanApplication.getAmount() == null) {
-            return Mono.error(new ValidationException(ErrorCodesEnum.AMOUNT_REQUIRED.getCode(),
-                    ErrorCodesEnum.AMOUNT_REQUIRED.getDefaultMessage()));
+            return Mono.error(new AmountNotValidException());
         }
         if (loanApplication.getTermMonths() == null) {
-            return Mono.error(new ValidationException(ErrorCodesEnum.TERM_REQUIRED.getCode(),
-                    ErrorCodesEnum.TERM_REQUIRED.getDefaultMessage()));
+            return Mono.error(new TermMonthsNotValidException());
         }
         if (loanApplication.getEmail() == null || loanApplication.getEmail().isBlank()) {
-            return Mono.error(new ValidationException(ErrorCodesEnum.EMAIL_REQUIRED.getCode(),
-                    ErrorCodesEnum.EMAIL_REQUIRED.getDefaultMessage()));
+            return Mono.error(new EmailNotValidException());
         }
         if (!EmailValidator.isValid(loanApplication.getEmail())) {
-            return Mono.error(new ValidationException(ErrorCodesEnum.EMAIL_INVALID.getCode(),
-                    ErrorCodesEnum.EMAIL_INVALID.getDefaultMessage()));
+            return Mono.error(new EmailNotValidException());
         }
 
         return loanTypeRepository.findByName(loanTypeName)
-                .switchIfEmpty(Mono.error(new NotFoundException(
-                        ErrorCodesEnum.LOAN_TYPE_NOT_FOUND.getCode(),
-                        ErrorCodesEnum.LOAN_TYPE_NOT_FOUND.getDefaultMessage()
-                )))
+                .switchIfEmpty(Mono.error(new LoanTypeNotFoundException()))
                 .flatMap(loanType -> {
                     LoanApplication updatedLoanApp = loanApplication.toBuilder()
                             .loanTypeId(loanType.getId())
@@ -57,18 +47,14 @@ public class CreateLoanApplicationUseCase {
                     return identityRepository.emailExists(updatedLoanApp.getEmail())
                             .flatMap(exists -> {
                                 if (!exists) {
-                                    return Mono.error(new NotFoundException(
-                                            ErrorCodesEnum.USER_EMAIL_NOT_FOUND.getCode(),
-                                            ErrorCodesEnum.USER_EMAIL_NOT_FOUND.getDefaultMessage()));
+                                    return Mono.error(new UserEmailNotFoundException());
                                 }
                                 Double min = loanType.getMinAmount();
                                 Double max = loanType.getMaxAmount();
                                 Double amount = updatedLoanApp.getAmount();
 
                                 if ((min != null && amount < min) || (max != null && amount > max)) {
-                                    return Mono.error(new ValidationException(
-                                            ErrorCodesEnum.AMOUNT_OUT_OF_RANGE.getCode(),
-                                            ErrorCodesEnum.AMOUNT_OUT_OF_RANGE.getDefaultMessage()));
+                                    return Mono.error(new AmountNotValidException());
                                 }
 
                                 return statusRepository.findByName(PredefinedStatusesEnum.PENDING_REVIEW.getName())
