@@ -147,4 +147,41 @@ class CreateLoanApplicationUseCaseTest {
                 .expectError(ValidationException.class)
                 .verify();
     }
+
+    @Test
+    void shouldFailWhenTermMonthsIsMissing() {
+        LoanApplication loanApp = buildValidLoanApplication();
+        loanApp.setTermMonths(null);
+
+        StepVerifier.create(createLoanApplicationUseCase.createLoanApplication(loanApp, "Basic"))
+                .expectError(ValidationException.class)
+                .verify();
+
+        verifyNoInteractions(loanTypeRepository, identityRepository, loanApplicationRepository);
+    }
+
+    @Test
+    void shouldFailWhenEmailIsNull() {
+        LoanApplication loanApp = buildValidLoanApplication();
+        loanApp.setEmail(null);
+
+        StepVerifier.create(createLoanApplicationUseCase.createLoanApplication(loanApp, "Basic"))
+                .expectError(ValidationException.class)
+                .verify();
+
+        verifyNoInteractions(loanTypeRepository, identityRepository, loanApplicationRepository);
+    }
+
+    @Test
+    void shouldFailWhenEmailIsBlank() {
+        LoanApplication loanApp = buildValidLoanApplication();
+        loanApp.setEmail(" ");
+
+        StepVerifier.create(createLoanApplicationUseCase.createLoanApplication(loanApp, "Basic"))
+                .expectError(ValidationException.class)
+                .verify();
+
+        verifyNoInteractions(loanTypeRepository, identityRepository, loanApplicationRepository);
+    }
+
 }
