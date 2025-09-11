@@ -1,5 +1,5 @@
 server:
-  port: 8081
+  port: 8080
 spring:
   application:
     name: "LoanApplications"
@@ -8,19 +8,19 @@ spring:
   sql:
     init:
       mode: never
-  adapters:
-    r2dbc:
-      host: ${DB_HOST}
-      port: ${DB_PORT}
-      database: ${DB_NAME}
-      schema: ${DB_SCHEMA}
-      username: ${DB_USER}
-      password: ${DB_PASSWORD}
+adapters:
+  r2dbc:
+    host: ${DB_HOST}
+    port: ${DB_PORT}
+    database: ${DB_NAME}
+    schema: ${DB_SCHEMA}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
 cors:
   allowed-origins: "http://localhost:8081"
 authentication:
   client:
-    base-url: "http://localhost:8080"
+    base-url: "${AUTHENTICATION_CLIENT_BASE_URL}"
     exists-path: "/api/v1/users/exists/{email}"
     connect-timeout-ms: 3000
     read-timeout-sec: 3

@@ -16,10 +16,10 @@ public enum ErrorCodesEnum {
     AMOUNT_OUT_OF_RANGE_400("AMOUNT_OUT_OF_RANGE_400", "Amount is out of allowed range for the selected loan type"),
     EMAIL_INVALID_400("EMAIL_INVALID_400", "Email is not valid"),
     USER_EMAIL_NOT_FOUND_404("USER_EMAIL_NOT_FOUND_404", "User not found with provided email"),
-    USER_NOT_AUTHORIZED_403("USER_NOT_AUTHORIZED_403", "User not authorized to perform this operation"),
-    USER_APPLICATION_NOT_MATCH_403("USER_APPLICATION_NOT_MATCH_403", "You can only create a loan application for your own account"),
+    USER_NOT_AUTHORIZED_401("USER_NOT_AUTHORIZED_401", "User not authorized to perform this operation"),
+    USER_APPLICATION_NOT_MATCH_404("USER_APPLICATION_NOT_MATCH_404", "You can only create a loan application for your own account"),
     USER_NOT_AUTHORIZED_TO_CREATE_401("USER_NOT_AUTHORIZED_TO_CREATE_LOAN_APPLICATION_401", "User not authorized to create a loan application"),
-    USER_NOT_AUTHENTICATED_401("USER_NOT_AUTHENTICATED_401", "User must be authenticated");
+    USER_NOT_AUTHENTICATED_403("USER_NOT_AUTHENTICATED_403", "User must be authenticated");
 
     private final String code;
     private final String defaultMessage;
