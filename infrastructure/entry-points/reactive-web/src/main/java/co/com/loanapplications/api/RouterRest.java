@@ -49,11 +49,11 @@ public class RouterRest {
                     )
             ),
             @RouterOperation(
-                    path = "/api/v1/loan-application",
+                    path = "/api/v1/loan-application/list",
                     beanClass = Handler.class,
-                    beanMethod = "listLoanApplications",
+                    beanMethod = "listenGetListLoanApplications",
                     operation = @Operation(
-                            operationId = "listLoanApplications",
+                            operationId = "listenGetListLoanApplications",
                             summary = "List loan applications for manual review",
                             description = "Returns a paged list of loan applications in statuses pending review / rejected / manual review. Requires role Consultant.",
                             parameters = {

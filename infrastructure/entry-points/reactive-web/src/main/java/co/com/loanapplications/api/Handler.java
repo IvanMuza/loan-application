@@ -3,8 +3,8 @@ package co.com.loanapplications.api;
 import co.com.loanapplications.api.dtos.CreateLoanApplicationDto;
 import co.com.loanapplications.api.mappers.LoanApplicationMapper;
 import co.com.loanapplications.model.loanapplication.LoanApplication;
-import co.com.loanapplications.model.loanapplication.enums.ErrorCodesEnum;
-import co.com.loanapplications.model.loanapplication.exceptions.ForbiddenException;
+import co.com.loanapplications.model.loanapplication.exceptions.UserApplicationNotMatchException;
+import co.com.loanapplications.model.loanapplication.exceptions.UserNotAuthorizedException;
 import co.com.loanapplications.usecase.createloanapplication.CreateLoanApplicationUseCase;
 import co.com.loanapplications.usecase.createloanapplication.ListLoanApplicationsUseCase;
 import lombok.RequiredArgsConstructor;
@@ -28,10 +28,7 @@ public class Handler {
     public Mono<ServerResponse> listenPostCreateLoanApplication(ServerRequest serverRequest) {
         return serverRequest.principal()
                 .cast(JwtAuthenticationToken.class)
-                .switchIfEmpty(Mono.error(new ForbiddenException(
-                        ErrorCodesEnum.USER_NOT_AUTHORIZED.getCode(),
-                        ErrorCodesEnum.USER_NOT_AUTHORIZED.getDefaultMessage()
-                )))
+                .switchIfEmpty(Mono.error(new UserNotAuthorizedException()))
                 .flatMap(auth -> {
                     String requesterEmail = auth.getToken().getSubject();
                     return serverRequest.bodyToMono(CreateLoanApplicationDto.class)
@@ -39,9 +36,7 @@ public class Handler {
                                 if (requesterEmail == null ||
                                         dto.getEmail() == null ||
                                         !requesterEmail.equalsIgnoreCase(dto.getEmail())) {
-                                    return Mono.error(new ForbiddenException(
-                                            ErrorCodesEnum.USER_APPLICATION_NOT_MATCH.getCode(),
-                                            ErrorCodesEnum.USER_APPLICATION_NOT_MATCH.getDefaultMessage()));
+                                    return Mono.error(new UserApplicationNotMatchException());
                                 }
                                 LoanApplication loanApp = loanApplicationMapper.toDomain(dto);
                                 return createLoanApplicationUseCase

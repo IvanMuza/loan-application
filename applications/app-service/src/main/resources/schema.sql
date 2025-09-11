@@ -20,7 +20,6 @@ CREATE TABLE IF NOT EXISTS loan_application (
                                   email VARCHAR(150) NOT NULL,
                                   status_id BIGINT NOT NULL,
                                   loan_type_id BIGINT NOT NULL,
-                                  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
                                   CONSTRAINT fk_status FOREIGN KEY (status_id) REFERENCES application_status(id),
                                   CONSTRAINT fk_loan_type FOREIGN KEY (loan_type_id) REFERENCES loan_type(id)

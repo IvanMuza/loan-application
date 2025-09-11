@@ -1,6 +1,5 @@
 package co.com.loanapplications.security.config;
 
-import co.com.loanapplications.model.loanapplication.enums.ErrorCodesEnum;
 import co.com.loanapplications.model.loanapplication.exceptions.UserNotAuthenticatedException;
 import co.com.loanapplications.model.loanapplication.exceptions.UserNotAuthorizedException;
 import co.com.loanapplications.security.ReactiveJwtAuthenticationConverter;
@@ -55,15 +54,9 @@ public class SecurityConfig {
 
                 .exceptionHandling(exceptionHandling -> exceptionHandling
                         .accessDeniedHandler((exchange, denied) ->
-                                Mono.error(new UserNotAuthorizedException(
-                                        ErrorCodesEnum.USER_NOT_AUTHORIZED_TO_CREATE.getCode(),
-                                        ErrorCodesEnum.USER_NOT_AUTHORIZED_TO_CREATE.getDefaultMessage()
-                                )))
+                                Mono.error(new UserNotAuthorizedException()))
                         .authenticationEntryPoint((exchange, e) ->
-                                Mono.error(new UserNotAuthenticatedException(
-                                        ErrorCodesEnum.USER_NOT_AUTHENTICATED.getCode(),
-                                        ErrorCodesEnum.USER_NOT_AUTHENTICATED.getDefaultMessage()
-                                ))
+                                Mono.error(new UserNotAuthenticatedException())
                         )
                 )
                 .build();

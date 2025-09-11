@@ -1,7 +1,9 @@
 package co.com.loanapplications.model.loanapplication.exceptions;
 
+import co.com.loanapplications.model.loanapplication.enums.ErrorCodesEnum;
+
 public class UserNotAuthorizedException extends BaseBusinessException {
-    public UserNotAuthorizedException(String code, String message) {
-        super(code, message);
+    public UserNotAuthorizedException() {
+        super(ErrorCodesEnum.USER_NOT_AUTHORIZED_401);
     }
 }

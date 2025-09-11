@@ -1,7 +1,10 @@
 package co.com.loanapplications.api.exceptions;
 
+import co.com.loanapplications.api.mappers.ErrorCodeToHttpStatusMapper;
+import co.com.loanapplications.model.loanapplication.enums.ErrorCodesEnum;
 import co.com.loanapplications.model.loanapplication.exceptions.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -12,22 +15,21 @@ import reactor.core.publisher.Mono;
 
 @Component
 @Order(-2)
+@RequiredArgsConstructor
 public class GlobalErrorExceptionHandler implements WebExceptionHandler {
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ErrorCodeToHttpStatusMapper errorCodeToHttpStatusMapper;
 
     @Override
     public Mono<Void> handle(ServerWebExchange serverWebExchange, Throwable ex) {
         HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
         String code = String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value());
-        if (ex instanceof UserNotAuthorizedException) {
-            status = HttpStatus.UNAUTHORIZED;
-            code = String.valueOf(HttpStatus.UNAUTHORIZED.value());
-        } else if (ex instanceof UserNotAuthenticatedException) {
-            status = HttpStatus.FORBIDDEN;
-            code = String.valueOf(HttpStatus.FORBIDDEN.value());
-        } else if (ex instanceof BaseBusinessException) {
-            status = HttpStatus.BAD_REQUEST;
-            code = String.valueOf(HttpStatus.BAD_REQUEST.value());
+
+        if (ex instanceof BaseBusinessException baseBusinessException) {
+            status = errorCodeToHttpStatusMapper.map(
+                    ErrorCodesEnum.valueOf(baseBusinessException.getCode())
+            );
+            code = baseBusinessException.getCode();
         }
 
         serverWebExchange.getResponse().setStatusCode(status);
