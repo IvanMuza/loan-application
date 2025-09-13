@@ -49,6 +49,7 @@ public class SecurityConfig {
                         .pathMatchers(HttpMethod.POST, "/api/v1/loan-application").hasRole("Customer")
                         .pathMatchers("/swagger-ui.html", "/v3/api-docs/**", "/webjars/swagger-ui/**").permitAll()
                         .pathMatchers(HttpMethod.GET, "/api/v1/loan-application/list").hasRole("Consultant")
+                        .pathMatchers(HttpMethod.PUT, "/api/v1/loan-application").hasRole("Consultant")
                         .anyExchange().authenticated()
                 )
 

@@ -17,11 +17,12 @@ public class ErrorCodeToHttpStatusMapper {
                  AMOUNT_OUT_OF_RANGE_400,
                  EMAIL_INVALID_400,
                  USER_APPLICATION_NOT_MATCH_404 -> HttpStatus.BAD_REQUEST;
-            case USER_NOT_AUTHORIZED_401,
-                 USER_NOT_AUTHORIZED_TO_CREATE_401 -> HttpStatus.UNAUTHORIZED;
+            case USER_NOT_AUTHORIZED_401 -> HttpStatus.UNAUTHORIZED;
             case LOAN_TYPE_NOT_FOUND_404,
-                 USER_EMAIL_NOT_FOUND_404 -> HttpStatus.NOT_FOUND;
+                 USER_EMAIL_NOT_FOUND_404,
+                 LOAN_APPLICATION_NOT_FOUND_404 -> HttpStatus.NOT_FOUND;
             case USER_NOT_AUTHENTICATED_403 -> HttpStatus.FORBIDDEN;
+            case APPLICATION_STATUS_NOT_ACCEPTED_406 -> HttpStatus.NOT_ACCEPTABLE;
         };
     }
 }
