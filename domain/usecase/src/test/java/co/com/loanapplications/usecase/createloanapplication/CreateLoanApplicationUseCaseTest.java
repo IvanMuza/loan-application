@@ -144,7 +144,7 @@ class CreateLoanApplicationUseCaseTest {
         when(identityRepository.emailExists(loanApp.getEmail())).thenReturn(Mono.just(true));
 
         StepVerifier.create(createLoanApplicationUseCase.createLoanApplication(loanApp, "Basic"))
-                .expectError(AmountNotValidException.class)
+                .expectError(AmountOutOfRangeException.class)
                 .verify();
     }
 

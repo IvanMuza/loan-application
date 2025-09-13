@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: ${SERVER_PORT}
 spring:
   application:
     name: "LoanApplications"
@@ -7,15 +7,18 @@ spring:
     add-properties: false
   sql:
     init:
-      mode: never
+      mode: "never"
 adapters:
   r2dbc:
-    host: ${DB_HOST}
-    port: ${DB_PORT}
-    database: ${DB_NAME}
-    schema: ${DB_SCHEMA}
-    username: ${DB_USER}
-    password: ${DB_PASSWORD}
+    host: "${DB_HOST}"
+    port: "${DB_PORT}"
+    database: "${DB_NAME}"
+    schema: "${DB_SCHEMA}"
+    username: "${DB_USER}"
+    password: "${DB_PASSWORD}"
+  sqs:
+    region: "${AWS_REGION:us-east-1}"
+    queueUrl: "${AWS_SQS_QUEUE_URL}"
 cors:
   allowed-origins: "http://localhost:8081"
 authentication:
@@ -27,4 +30,4 @@ authentication:
     find-by-email-path: "/api/v1/users/email/{email}"
 security:
   jwt:
-    secret: ${JWT_SECRET}
+    secret: "${JWT_SECRET}"
