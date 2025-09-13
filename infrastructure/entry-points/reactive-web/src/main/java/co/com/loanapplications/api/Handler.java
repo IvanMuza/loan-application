@@ -3,10 +3,10 @@ package co.com.loanapplications.api;
 import co.com.loanapplications.api.dtos.CreateLoanApplicationDto;
 import co.com.loanapplications.api.mappers.LoanApplicationMapper;
 import co.com.loanapplications.model.loanapplication.LoanApplication;
-import co.com.loanapplications.model.loanapplication.exceptions.UserApplicationNotMatchException;
-import co.com.loanapplications.model.loanapplication.exceptions.UserNotAuthorizedException;
+import co.com.loanapplications.model.loanapplication.exceptions.*;
 import co.com.loanapplications.usecase.createloanapplication.CreateLoanApplicationUseCase;
 import co.com.loanapplications.usecase.createloanapplication.ListLoanApplicationsUseCase;
+import co.com.loanapplications.usecase.createloanapplication.UpdateLoanApplicationUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -24,11 +24,11 @@ public class Handler {
     private final LoanApplicationMapper loanApplicationMapper;
     private final TransactionalOperator transactionalOperator;
     private final ListLoanApplicationsUseCase listLoanApplicationsUseCase;
+    private final UpdateLoanApplicationUseCase updateLoanApplicationUseCase;
 
     public Mono<ServerResponse> listenPostCreateLoanApplication(ServerRequest serverRequest) {
         return serverRequest.principal()
                 .cast(JwtAuthenticationToken.class)
-                .switchIfEmpty(Mono.error(new UserNotAuthorizedException()))
                 .flatMap(auth -> {
                     String requesterEmail = auth.getToken().getSubject();
                     return serverRequest.bodyToMono(CreateLoanApplicationDto.class)
@@ -60,5 +60,24 @@ public class Handler {
                         ServerResponse.ok()
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .bodyValue(dto));
+    }
+
+    public Mono<ServerResponse> listenPutUpdateLoanApplication(ServerRequest serverRequest) {
+        return serverRequest.principal()
+                .cast(JwtAuthenticationToken.class)
+                .flatMap(auth -> {
+                    String idParam = serverRequest.queryParam("loanApplicationId")
+                            .orElseThrow(LoanApplicationNotFoundException::new);
+                    String statusParam = serverRequest.queryParam("status")
+                            .orElseThrow(ApplicationStatusNotAcceptedException::new);
+
+                    Long applicationId = Long.parseLong(idParam);
+
+                    return updateLoanApplicationUseCase.updateStatus(applicationId, statusParam);
+                })
+                .flatMap(resp -> ServerResponse.ok()
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .bodyValue(resp))
+                .as(transactionalOperator::transactional);
     }
 }

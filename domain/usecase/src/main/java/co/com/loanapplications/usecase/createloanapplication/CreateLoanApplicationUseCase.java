@@ -54,7 +54,7 @@ public class CreateLoanApplicationUseCase {
                                 Double amount = updatedLoanApp.getAmount();
 
                                 if ((min != null && amount < min) || (max != null && amount > max)) {
-                                    return Mono.error(new AmountNotValidException());
+                                    return Mono.error(new AmountOutOfRangeException());
                                 }
 
                                 return statusRepository.findByName(PredefinedStatusesEnum.PENDING_REVIEW.getName())

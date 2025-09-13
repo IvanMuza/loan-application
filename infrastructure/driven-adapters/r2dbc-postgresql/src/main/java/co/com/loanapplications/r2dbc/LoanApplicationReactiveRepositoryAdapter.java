@@ -56,6 +56,11 @@ public class LoanApplicationReactiveRepositoryAdapter
                 .one();
     }
 
+    @Override
+    public Mono<LoanApplication> findById(Long id) {
+        return this.repository.findById(id);
+    }
+
     private LoanApplication mapRowToLoanApplication(Row row, RowMetadata meta) {
         LoanApplication la = new LoanApplication();
         la.setId(row.get("id", Long.class));
