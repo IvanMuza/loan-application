@@ -14,4 +14,6 @@ public interface LoanApplicationRepository {
     Mono<Long> countByStatusNames(List<String> statusNames);
 
     Mono<LoanApplication> findById(Long id);
+
+    Flux<LoanApplication> findByEmailAndStatusId(String email, Long statusId);
 }

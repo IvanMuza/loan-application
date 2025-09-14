@@ -1,4 +1,4 @@
-package co.com.loanapplications.model.loanapplication;
+package co.com.loanapplications.model.loanapplication.events;
 
 import lombok.Builder;
 import lombok.Data;

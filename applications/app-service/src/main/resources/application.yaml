@@ -1,5 +1,5 @@
 server:
-  port: ${SERVER_PORT}
+  port: "${SERVER_PORT}"
 spring:
   application:
     name: "LoanApplications"
@@ -18,7 +18,17 @@ adapters:
     password: "${DB_PASSWORD}"
   sqs:
     region: "${AWS_REGION:us-east-1}"
-    queueUrl: "${AWS_SQS_QUEUE_URL}"
+    publishQueueUrl: "${AWS_SQS_PUBLISH_QUEUE_URL}"
+    validateQueueUrl: "${AWS_SQS_VALIDATE_QUEUE_URL}"
+entrypoint:
+  sqs:
+    region: "${AWS_REGION:us-east-1}"
+    queueUrl: "${AWS_SQS_PROCESS_QUEUE_URL}"
+    waitTimeSeconds: 20
+    visibilityTimeoutSeconds: 30
+    maxNumberOfMessages: 5
+    numberOfThreads: 2
+
 cors:
   allowed-origins: "http://localhost:8081"
 authentication:
