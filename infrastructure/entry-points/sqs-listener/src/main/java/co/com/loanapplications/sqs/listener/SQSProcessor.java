@@ -36,7 +36,7 @@ public class SQSProcessor implements Function<Message, Mono<Void>> {
                                                 })
                                 )
                 )
-                .doOnSuccess(v -> log.info("Processed SQS message for applicationId={}", message.messageId()))
+                .doOnSuccess(v -> log.info("Processed SQS message for messageId={}", message.messageId()))
                 .doOnError(e -> log.error("Error processing SQS message with body={}", message.body(), e))
                 .then();
     }

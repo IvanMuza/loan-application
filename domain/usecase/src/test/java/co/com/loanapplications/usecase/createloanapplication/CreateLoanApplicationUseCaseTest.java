@@ -4,16 +4,18 @@ import co.com.loanapplications.model.loanapplication.ApplicationStatus;
 import co.com.loanapplications.model.loanapplication.LoanApplication;
 import co.com.loanapplications.model.loanapplication.LoanType;
 import co.com.loanapplications.model.loanapplication.enums.PredefinedStatusesEnum;
+import co.com.loanapplications.model.loanapplication.events.CapacityRequestEvent;
 import co.com.loanapplications.model.loanapplication.exceptions.*;
-import co.com.loanapplications.model.loanapplication.gateways.ApplicationStatusRepository;
-import co.com.loanapplications.model.loanapplication.gateways.IdentityRepository;
-import co.com.loanapplications.model.loanapplication.gateways.LoanApplicationRepository;
-import co.com.loanapplications.model.loanapplication.gateways.LoanTypeRepository;
+import co.com.loanapplications.model.loanapplication.gateways.*;
+import co.com.loanapplications.model.loanapplication.identity.UserDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+
+import java.math.BigDecimal;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -24,6 +26,7 @@ class CreateLoanApplicationUseCaseTest {
     private ApplicationStatusRepository statusRepository;
     private LoanApplicationRepository loanApplicationRepository;
     private CreateLoanApplicationUseCase createLoanApplicationUseCase;
+    private LoanApplicationStatusEventRepository loanApplicationStatusEventRepository;
 
     @BeforeEach
     void setUp() {
@@ -31,11 +34,13 @@ class CreateLoanApplicationUseCaseTest {
         identityRepository = Mockito.mock(IdentityRepository.class);
         statusRepository = Mockito.mock(ApplicationStatusRepository.class);
         loanApplicationRepository = Mockito.mock(LoanApplicationRepository.class);
+        loanApplicationStatusEventRepository = Mockito.mock(LoanApplicationStatusEventRepository.class);
         createLoanApplicationUseCase = new CreateLoanApplicationUseCase(
                 loanApplicationRepository,
                 loanTypeRepository,
                 statusRepository,
-                identityRepository
+                identityRepository,
+                loanApplicationStatusEventRepository
         );
     }
 
@@ -53,6 +58,14 @@ class CreateLoanApplicationUseCaseTest {
                 .name("Basic")
                 .minAmount(1_000_000D)
                 .maxAmount(10_000_000D)
+                .automaticValidation(false)
+                .build();
+    }
+
+    private UserDto buildValidUser() {
+        return UserDto.builder()
+                .email("ivanmuza@test.com")
+                .baseSalary(2_000_000D)
                 .build();
     }
 
@@ -62,7 +75,7 @@ class CreateLoanApplicationUseCaseTest {
         LoanType loanType = buildValidLoanType();
 
         when(loanTypeRepository.findByName("Basic")).thenReturn(Mono.just(loanType));
-        when(identityRepository.emailExists(loanApp.getEmail())).thenReturn(Mono.just(true));
+        when(identityRepository.findByEmail(loanApp.getEmail())).thenReturn(Mono.just(buildValidUser()));
         when(statusRepository.findByName("PENDING_REVIEW")).thenReturn(Mono.just(
                 ApplicationStatus.builder().id(2L).name("PENDING_REVIEW").build()
         ));
@@ -127,7 +140,7 @@ class CreateLoanApplicationUseCaseTest {
         LoanType loanType = buildValidLoanType();
 
         when(loanTypeRepository.findByName("Basic")).thenReturn(Mono.just(loanType));
-        when(identityRepository.emailExists(loanApp.getEmail())).thenReturn(Mono.just(false));
+        when(identityRepository.findByEmail(loanApp.getEmail())).thenReturn(Mono.empty());
 
         StepVerifier.create(createLoanApplicationUseCase.createLoanApplication(loanApp, "Basic"))
                 .expectError(UserEmailNotFoundException.class)
@@ -141,7 +154,7 @@ class CreateLoanApplicationUseCaseTest {
         LoanType loanType = buildValidLoanType();
 
         when(loanTypeRepository.findByName("Basic")).thenReturn(Mono.just(loanType));
-        when(identityRepository.emailExists(loanApp.getEmail())).thenReturn(Mono.just(true));
+        when(identityRepository.findByEmail(loanApp.getEmail())).thenReturn(Mono.just(buildValidUser()));
 
         StepVerifier.create(createLoanApplicationUseCase.createLoanApplication(loanApp, "Basic"))
                 .expectError(AmountOutOfRangeException.class)
@@ -191,8 +204,8 @@ class CreateLoanApplicationUseCaseTest {
 
         when(loanTypeRepository.findByName("Basic"))
                 .thenReturn(Mono.just(loanType));
-        when(identityRepository.emailExists(loanApp.getEmail()))
-                .thenReturn(Mono.just(true));
+        when(identityRepository.findByEmail(loanApp.getEmail()))
+                .thenReturn(Mono.just(buildValidUser()));
         when(statusRepository.findByName(PredefinedStatusesEnum.PENDING_REVIEW.getName()))
                 .thenReturn(Mono.empty());
         when(loanApplicationRepository.save(any(LoanApplication.class)))
@@ -206,5 +219,78 @@ class CreateLoanApplicationUseCaseTest {
         verify(statusRepository).findByName(PredefinedStatusesEnum.PENDING_REVIEW.getName());
         verify(loanApplicationRepository).save(any(LoanApplication.class));
     }
+
+    @Test
+    void shouldFailWhenApprovedStatusNotFoundInCalculateDebtAndPublish() {
+        LoanApplication loanApp = buildValidLoanApplication().toBuilder()
+                .id(100L)
+                .build();
+
+        LoanType loanType = buildValidLoanType().toBuilder()
+                .automaticValidation(true)
+                .interestRate(BigDecimal.valueOf(12))
+                .build();
+
+        UserDto user = UserDto.builder()
+                .email(loanApp.getEmail())
+                .baseSalary(5_000_000D)
+                .build();
+
+        when(loanTypeRepository.findByName("Basic")).thenReturn(Mono.just(loanType));
+        when(identityRepository.findByEmail(loanApp.getEmail())).thenReturn(Mono.just(user));
+        when(statusRepository.findByName(PredefinedStatusesEnum.PENDING_REVIEW.getName()))
+                .thenReturn(Mono.just(ApplicationStatus.builder().id(2L).name("PENDING_REVIEW").build()));
+        when(loanApplicationRepository.save(any())).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
+
+        // Para calculateDebtAndPublish: devolvemos vacío en el status APPROVED
+        when(statusRepository.findByName(PredefinedStatusesEnum.APPROVED.getName())).thenReturn(Mono.empty());
+
+        StepVerifier.create(createLoanApplicationUseCase.createLoanApplication(loanApp, "Basic"))
+                .expectError(ApplicationStatusNotFoundException.class)
+                .verify();
+    }
+
+    @Test
+    void shouldPublishCapacityRequestEventWhenAutomaticValidationEnabled() {
+        LoanApplication loanApp = buildValidLoanApplication().toBuilder()
+                .id(101L)
+                .amount(2_000_000D)
+                .termMonths(24)
+                .build();
+
+        LoanType loanType = buildValidLoanType().toBuilder()
+                .automaticValidation(true)
+                .interestRate(BigDecimal.valueOf(12))
+                .build();
+
+        UserDto user = UserDto.builder()
+                .email(loanApp.getEmail())
+                .baseSalary(4_000_000D)
+                .build();
+
+        ApplicationStatus pendingStatus = ApplicationStatus.builder().id(2L).name("PENDING_REVIEW").build();
+        ApplicationStatus approvedStatus = ApplicationStatus.builder().id(3L).name("APPROVED").build();
+
+        when(loanTypeRepository.findByName("Basic")).thenReturn(Mono.just(loanType));
+        when(identityRepository.findByEmail(loanApp.getEmail())).thenReturn(Mono.just(user));
+        when(statusRepository.findByName(PredefinedStatusesEnum.PENDING_REVIEW.getName())).thenReturn(Mono.just(pendingStatus));
+        when(loanApplicationRepository.save(any())).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
+        when(statusRepository.findByName(PredefinedStatusesEnum.APPROVED.getName())).thenReturn(Mono.just(approvedStatus));
+        when(loanApplicationRepository.findByEmailAndStatusId(user.getEmail(), approvedStatus.getId()))
+                .thenReturn(Flux.just(LoanApplication.builder()
+                        .amount(1_000_000D)
+                        .termMonths(12)
+                        .loanTypeId(loanType.getId())
+                        .build()));
+        when(loanApplicationStatusEventRepository.validate(any(CapacityRequestEvent.class)))
+                .thenReturn(Mono.empty());
+
+        StepVerifier.create(createLoanApplicationUseCase.createLoanApplication(loanApp, "Basic"))
+                .expectNextMatches(saved -> saved.getId().equals(101L))
+                .verifyComplete();
+
+        verify(loanApplicationStatusEventRepository).validate(any(CapacityRequestEvent.class));
+    }
+
 
 }

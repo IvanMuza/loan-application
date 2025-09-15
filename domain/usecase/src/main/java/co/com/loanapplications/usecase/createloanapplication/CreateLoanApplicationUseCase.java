@@ -86,13 +86,13 @@ public class CreateLoanApplicationUseCase {
 
     private Mono<Void> calculateDebtAndPublish(LoanApplication newApp, LoanType loanType, UserDto user) {
         return statusRepository.findByName(PredefinedStatusesEnum.APPROVED.getName())
-                .switchIfEmpty(Mono.error(new IllegalStateException("Status APPROVED not found")))
+                .switchIfEmpty(Mono.error(new ApplicationStatusNotFoundException()))
                 .flatMapMany(approvedStatus ->
                         loanApplicationRepository.findByEmailAndStatusId(user.getEmail(), approvedStatus.getId())
                 )
                 .map(loan -> new LoanSummary(
                         loan.getAmount(),
-                        loanType.getInterestRate().doubleValue(),
+                        loanType.getInterestRate(),
                         loan.getTermMonths()
                 ))
                 .collectList()
@@ -100,9 +100,15 @@ public class CreateLoanApplicationUseCase {
                     double totalDebt = activeLoans.stream()
                             .mapToDouble(l -> calculateMonthlyInstallment(
                                     l.getPrincipal(),
-                                    BigDecimal.valueOf(l.getAnnualInterestRate()),
+                                    l.getAnnualInterestRate(),
                                     l.getTermMonths()))
                             .sum();
+
+                    double newLoanInstallment = calculateMonthlyInstallment(
+                            newApp.getAmount(),
+                            loanType.getInterestRate(),
+                            newApp.getTermMonths()
+                    );
 
                     CapacityRequestEvent event = CapacityRequestEvent.builder()
                             .applicationId(newApp.getId())
@@ -115,6 +121,7 @@ public class CreateLoanApplicationUseCase {
                                     loanType.getInterestRate(),
                                     newApp.getTermMonths(),
                                     loanType.getName()))
+                            .newLoanMonthlyInstallment(newLoanInstallment)
                             .build();
 
                     return loanApplicationStatusEventRepository.validate(event);
@@ -122,8 +129,8 @@ public class CreateLoanApplicationUseCase {
     }
 
     private double calculateMonthlyInstallment(double amount, BigDecimal annualRate, int termMonths) {
-        double rate = annualRate.doubleValue();
-        double monthlyRate = rate / 12.0;
+        double rateDecimal = annualRate.doubleValue() / 100;
+        double monthlyRate = rateDecimal / 12.0;
         return (amount * monthlyRate) / (1 - Math.pow(1 + monthlyRate, -termMonths));
     }
 

@@ -18,4 +18,5 @@ public class CapacityRequestEvent {
     private Double currentDebt;
     private List<LoanSummary> activeLoans;
     private NewLoan newLoan;
+    private Double newLoanMonthlyInstallment;
 }
