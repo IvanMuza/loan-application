@@ -1,6 +1,7 @@
 package co.com.loanapplications.sqs.sender;
 
-import co.com.loanapplications.model.loanapplication.LoanApplicationStatusEvent;
+import co.com.loanapplications.model.loanapplication.events.CapacityRequestEvent;
+import co.com.loanapplications.model.loanapplication.events.LoanApplicationStatusEvent;
 import co.com.loanapplications.model.loanapplication.gateways.LoanApplicationStatusEventRepository;
 import co.com.loanapplications.sqs.sender.config.SQSSenderProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -24,27 +25,38 @@ public class SQSSender implements LoanApplicationStatusEventRepository {
     public Mono<Void> publish(LoanApplicationStatusEvent  event) {
         return Mono.fromCallable(() -> objectMapper.writeValueAsString(event))
                 .map(body -> SendMessageRequest.builder()
-                        .queueUrl(properties.queueUrl())
+                        .queueUrl(properties.publishQueueUrl())
                         .messageBody(body)
                         .build()
                 )
                 .flatMap(request -> Mono.fromFuture(client.sendMessage(request)))
                 .doOnNext(response -> log.info("Message sent to SQS queue={} with messageId={}",
-                        properties.queueUrl(), response.messageId()))
+                        properties.publishQueueUrl(), response.messageId()))
+                .then();
+    }
+
+    public Mono<Void> validate(CapacityRequestEvent event) {
+        return Mono.fromCallable(() -> objectMapper.writeValueAsString(event))
+                .map(body -> SendMessageRequest.builder()
+                        .queueUrl(properties.validateQueueUrl())
+                        .messageBody(body)
+                        .build())
+                .flatMap(req -> Mono.fromFuture(client.sendMessage(req)))
+                .doOnNext(resp -> log.info("capacity request sent messageId={}", resp.messageId()))
                 .then();
     }
 
     public Mono<String> send(String message) {
-        return Mono.fromCallable(() -> buildRequest(message))
+        return Mono.fromCallable(() -> buildRequest(message, properties.publishQueueUrl()))
                 .flatMap(request -> Mono.fromFuture(client.sendMessage(request)))
                 .doOnNext(response ->
                         log.info("Sending message to SQS with ID: {}", response.messageId()))
                 .map(SendMessageResponse::messageId);
     }
 
-    private SendMessageRequest buildRequest(String message) {
+    private SendMessageRequest buildRequest(String message, String queueUrl) {
         return SendMessageRequest.builder()
-                .queueUrl(properties.queueUrl())
+                .queueUrl(queueUrl)
                 .messageBody(message)
                 .build();
     }

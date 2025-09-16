@@ -10,6 +10,7 @@ import org.mapstruct.Mapping;
 public interface LoanApplicationMapper {
     @Mapping(target = "loanTypeId", ignore = true)
     @Mapping(target = "statusId", ignore = true)
+    @Mapping(target = "id", ignore = true)
     LoanApplication toDomain(CreateLoanApplicationDto request);
 
     LoanApplicationResponseDto toResponse(LoanApplication application);

@@ -3,7 +3,7 @@ package co.com.loanapplications.usecase.createloanapplication;
 import co.com.loanapplications.api.dtos.UpdateLoanApplicationResponseDto;
 import co.com.loanapplications.model.loanapplication.ApplicationStatus;
 import co.com.loanapplications.model.loanapplication.LoanApplication;
-import co.com.loanapplications.model.loanapplication.LoanApplicationStatusEvent;
+import co.com.loanapplications.model.loanapplication.events.LoanApplicationStatusEvent;
 import co.com.loanapplications.model.loanapplication.enums.PredefinedStatusesEnum;
 import co.com.loanapplications.model.loanapplication.exceptions.ApplicationStatusNotAcceptedException;
 import co.com.loanapplications.model.loanapplication.exceptions.LoanApplicationNotFoundException;

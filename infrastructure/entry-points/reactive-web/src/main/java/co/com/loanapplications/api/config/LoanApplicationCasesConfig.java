@@ -14,12 +14,14 @@ public class LoanApplicationCasesConfig {
             LoanApplicationRepository loanApplicationRepository,
             LoanTypeRepository loanTypeRepository,
             ApplicationStatusRepository applicationStatusRepository,
-            IdentityRepository identityRepository) {
+            IdentityRepository identityRepository,
+            LoanApplicationStatusEventRepository loanApplicationStatusEventRepository) {
         return new CreateLoanApplicationUseCase(
                 loanApplicationRepository,
                 loanTypeRepository,
                 applicationStatusRepository,
-                identityRepository);
+                identityRepository,
+                loanApplicationStatusEventRepository);
     }
 
     @Bean

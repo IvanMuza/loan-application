@@ -61,6 +61,11 @@ public class LoanApplicationReactiveRepositoryAdapter
         return this.repository.findById(id);
     }
 
+    @Override
+    public Flux<LoanApplication> findByEmailAndStatusId(String email, Long statusId){
+        return this.repository.findByEmailAndStatusId(email, statusId);
+    }
+
     private LoanApplication mapRowToLoanApplication(Row row, RowMetadata meta) {
         LoanApplication la = new LoanApplication();
         la.setId(row.get("id", Long.class));

@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 public enum ErrorCodesEnum {
     APPLICATION_REQUIRED_400("APPLICATION_REQUIRED_400", "Loan application must not be null"),
     APPLICATION_STATUS_NOT_ACCEPTED_406("APPLICATION_STATUS_NOT_ACCEPTED_406", "The application status is not accepted. Only Approved or Rejected is allowed."),
+    APPLICATION_STATUS_APPROVED_NOT_FOUND_404("APPLICATION_STATUS_APPROVED_NOT_FOUND_404", "The application status APPROVED is not founded."),
     AMOUNT_REQUIRED_400("AMOUNT_REQUIRED_400", "Amount is required"),
     TERM_REQUIRED_400("TERM_REQUIRED_400", "Term is required"),
     EMAIL_REQUIRED_400("EMAIL_REQUIRED_400", "Email is required"),
