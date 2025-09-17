@@ -22,7 +22,7 @@ public class SQSSender implements LoanApplicationStatusEventRepository {
     private final ObjectMapper objectMapper;
 
     @Override
-    public Mono<Void> publish(LoanApplicationStatusEvent  event) {
+    public Mono<Void> publish(LoanApplicationStatusEvent event) {
         return Mono.fromCallable(() -> objectMapper.writeValueAsString(event))
                 .map(body -> SendMessageRequest.builder()
                         .queueUrl(properties.publishQueueUrl())
@@ -42,7 +42,7 @@ public class SQSSender implements LoanApplicationStatusEventRepository {
                         .messageBody(body)
                         .build())
                 .flatMap(req -> Mono.fromFuture(client.sendMessage(req)))
-                .doOnNext(resp -> log.info("capacity request sent messageId={}", resp.messageId()))
+                .doOnNext(resp -> log.info("Capacity request sent messageId={}", resp.messageId()))
                 .then();
     }
 

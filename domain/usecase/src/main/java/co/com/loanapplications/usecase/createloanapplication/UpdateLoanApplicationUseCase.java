@@ -21,6 +21,7 @@ public class UpdateLoanApplicationUseCase {
     private final ApplicationStatusRepository statusRepository;
     private final LoanTypeRepository loanTypeRepository;
     private final LoanApplicationStatusEventRepository loanApplicationStatusEventRepository;
+    private final PublishLoanApprovedEventUseCase publishLoanApprovedEventUseCase;
 
     public Mono<UpdateLoanApplicationResponseDto> updateStatus(Long applicationId, String newStatus) {
         if (applicationId == null) {
@@ -60,6 +61,12 @@ public class UpdateLoanApplicationUseCase {
                                                                 .build();
 
                                                         return loanApplicationStatusEventRepository.publish(event)
+                                                                .then(Mono.defer(() -> {
+                                                                    if (newStatus.equalsIgnoreCase(PredefinedStatusesEnum.APPROVED.getName())) {
+                                                                        return publishLoanApprovedEventUseCase.execute(saved);
+                                                                    }
+                                                                    return Mono.empty();
+                                                                }))
                                                                 .thenReturn(new UpdateLoanApplicationResponseDto(
                                                                         saved.getId(),
                                                                         saved.getEmail(),

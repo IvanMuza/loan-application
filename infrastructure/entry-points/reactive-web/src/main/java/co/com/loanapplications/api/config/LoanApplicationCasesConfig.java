@@ -3,6 +3,7 @@ package co.com.loanapplications.api.config;
 import co.com.loanapplications.model.loanapplication.gateways.*;
 import co.com.loanapplications.usecase.createloanapplication.CreateLoanApplicationUseCase;
 import co.com.loanapplications.usecase.createloanapplication.ListLoanApplicationsUseCase;
+import co.com.loanapplications.usecase.createloanapplication.PublishLoanApprovedEventUseCase;
 import co.com.loanapplications.usecase.createloanapplication.UpdateLoanApplicationUseCase;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -42,12 +43,24 @@ public class LoanApplicationCasesConfig {
             LoanApplicationRepository loanApplicationRepository,
             ApplicationStatusRepository statusRepository,
             LoanTypeRepository loanTypeRepository,
-            LoanApplicationStatusEventRepository loanApplicationStatusEventRepository) {
+            LoanApplicationStatusEventRepository loanApplicationStatusEventRepository,
+            PublishLoanApprovedEventUseCase publishLoanApprovedEventUseCase) {
         return new UpdateLoanApplicationUseCase(
                 loanApplicationRepository,
                 statusRepository,
                 loanTypeRepository,
-                loanApplicationStatusEventRepository
-                );
+                loanApplicationStatusEventRepository,
+                publishLoanApprovedEventUseCase
+        );
+    }
+
+    @Bean
+    public PublishLoanApprovedEventUseCase publishLoanApprovedEventUseCase(
+            LoanApprovedEventPublisher loanApprovedEventPublisher,
+            ApplicationStatusRepository applicationStatusRepository) {
+        return new PublishLoanApprovedEventUseCase(
+                loanApprovedEventPublisher,
+                applicationStatusRepository
+        );
     }
 }
