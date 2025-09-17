@@ -20,6 +20,7 @@ adapters:
     region: "${AWS_REGION:us-east-1}"
     publishQueueUrl: "${AWS_SQS_PUBLISH_QUEUE_URL}"
     validateQueueUrl: "${AWS_SQS_VALIDATE_QUEUE_URL}"
+    publishReportQueueUrl: "${AWS_SQS_PUBLISH_REPORT_QUEUE_URL}"
 entrypoint:
   sqs:
     region: "${AWS_REGION:us-east-1}"
@@ -28,7 +29,6 @@ entrypoint:
     visibilityTimeoutSeconds: 30
     maxNumberOfMessages: 5
     numberOfThreads: 2
-
 cors:
   allowed-origins: "http://localhost:8081"
 authentication:

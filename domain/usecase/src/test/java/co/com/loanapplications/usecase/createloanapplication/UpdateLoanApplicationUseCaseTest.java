@@ -25,6 +25,7 @@ class UpdateLoanApplicationUseCaseTest {
     private LoanTypeRepository loanTypeRepository;
     private LoanApplicationStatusEventRepository loanApplicationStatusEventRepository;
     private UpdateLoanApplicationUseCase updateLoanApplicationUseCase;
+    private PublishLoanApprovedEventUseCase publishLoanApprovedEventUseCase;
 
     @BeforeEach
     void setUp() {
@@ -32,12 +33,14 @@ class UpdateLoanApplicationUseCaseTest {
         statusRepository = Mockito.mock(ApplicationStatusRepository.class);
         loanTypeRepository = Mockito.mock(LoanTypeRepository.class);
         loanApplicationStatusEventRepository = Mockito.mock(LoanApplicationStatusEventRepository.class);
+        publishLoanApprovedEventUseCase = Mockito.mock(PublishLoanApprovedEventUseCase.class);
 
         updateLoanApplicationUseCase = new UpdateLoanApplicationUseCase(
                 loanApplicationRepository,
                 statusRepository,
                 loanTypeRepository,
-                loanApplicationStatusEventRepository
+                loanApplicationStatusEventRepository,
+                publishLoanApprovedEventUseCase
         );
     }
 
@@ -80,6 +83,7 @@ class UpdateLoanApplicationUseCaseTest {
         when(loanApplicationRepository.save(any())).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
         when(loanTypeRepository.findById(10L)).thenReturn(Mono.just(loanType));
         when(loanApplicationStatusEventRepository.publish(any())).thenReturn(Mono.empty());
+        when(publishLoanApprovedEventUseCase.execute(any())).thenReturn(Mono.empty());
 
         StepVerifier.create(updateLoanApplicationUseCase.updateStatus(1L, "APPROVED"))
                 .expectNextMatches(saved ->
@@ -154,6 +158,7 @@ class UpdateLoanApplicationUseCaseTest {
         when(loanApplicationRepository.save(any())).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
         when(loanTypeRepository.findById(10L)).thenReturn(Mono.just(loanType));
         when(loanApplicationStatusEventRepository.publish(any())).thenReturn(Mono.empty());
+        when(publishLoanApprovedEventUseCase.execute(any())).thenReturn(Mono.empty());
 
         StepVerifier.create(updateLoanApplicationUseCase.updateStatus(1L, "APPROVED"))
                 .expectNextMatches(response ->

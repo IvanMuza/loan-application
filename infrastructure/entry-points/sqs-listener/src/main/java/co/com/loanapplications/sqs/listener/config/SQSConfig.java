@@ -16,7 +16,6 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.sqs.SqsAsyncClient;
 import software.amazon.awssdk.services.sqs.model.Message;
 
-import java.net.URI;
 import java.util.function.Function;
 
 @Configuration
@@ -35,7 +34,6 @@ public class SQSConfig {
     @Bean
     public SqsAsyncClient configSqs(SQSProperties properties, MetricPublisher publisher) {
         return SqsAsyncClient.builder()
-//                .endpointOverride(resolveEndpoint(properties))
                 .region(Region.of(properties.region()))
                 .overrideConfiguration(o -> o.addMetricPublisher(publisher))
                 .credentialsProvider(getProviderChain())
@@ -53,10 +51,4 @@ public class SQSConfig {
                 .build();
     }
 
-//    protected URI resolveEndpoint(SQSProperties properties) {
-//        if (properties.endpoint() != null) {
-//            return URI.create(properties.endpoint());
-//        }
-//        return null;
-//    }
 }

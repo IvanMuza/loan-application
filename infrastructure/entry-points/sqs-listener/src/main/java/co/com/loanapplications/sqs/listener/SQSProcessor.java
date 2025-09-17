@@ -1,9 +1,11 @@
 package co.com.loanapplications.sqs.listener;
 
 import co.com.loanapplications.model.loanapplication.LoanApplication;
+import co.com.loanapplications.model.loanapplication.enums.PredefinedStatusesEnum;
 import co.com.loanapplications.model.loanapplication.events.CapacityResponseEvent;
 import co.com.loanapplications.model.loanapplication.gateways.ApplicationStatusRepository;
 import co.com.loanapplications.model.loanapplication.gateways.LoanApplicationRepository;
+import co.com.loanapplications.usecase.createloanapplication.PublishLoanApprovedEventUseCase;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -20,6 +22,7 @@ public class SQSProcessor implements Function<Message, Mono<Void>> {
     private final ObjectMapper objectMapper;
     private final LoanApplicationRepository loanApplicationRepository;
     private final ApplicationStatusRepository applicationStatusRepository;
+    private final PublishLoanApprovedEventUseCase publishLoanApprovedEventUseCase;
 
     @Override
     public Mono<Void> apply(Message message) {
@@ -32,7 +35,14 @@ public class SQSProcessor implements Function<Message, Mono<Void>> {
                                                     LoanApplication updated = app.toBuilder()
                                                             .statusId(status.getId())
                                                             .build();
-                                                    return loanApplicationRepository.save(updated);
+                                                    return loanApplicationRepository.save(updated)
+                                                            .flatMap(saved -> {
+                                                                if (PredefinedStatusesEnum.APPROVED.getName().equals(status.getName())) {
+                                                                    return publishLoanApprovedEventUseCase.execute(saved)
+                                                                            .thenReturn(saved);
+                                                                }
+                                                                return Mono.just(saved);
+                                                            });
                                                 })
                                 )
                 )
