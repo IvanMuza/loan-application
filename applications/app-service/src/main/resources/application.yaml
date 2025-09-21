@@ -8,6 +8,8 @@ spring:
   sql:
     init:
       mode: "never"
+  profiles:
+    active: "Prod"
 adapters:
   r2dbc:
     host: "${DB_HOST}"
@@ -30,7 +32,7 @@ entrypoint:
     maxNumberOfMessages: 5
     numberOfThreads: 2
 cors:
-  allowed-origins: "http://localhost:8081"
+  allowed-origins: "${CORS_ALLOWED_ORIGINS}"
 authentication:
   client:
     base-url: "${AUTHENTICATION_CLIENT_BASE_URL}"
@@ -38,6 +40,23 @@ authentication:
     connect-timeout-ms: 3000
     read-timeout-sec: 3
     find-by-email-path: "/api/v1/users/email/{email}"
-security:
-  jwt:
-    secret: "${JWT_SECRET}"
+aws:
+  region: "${AWS_REGION:us-east-1}"
+  secretName: "prod/CrediYa/LoanApplications/Secrets"
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,info,prometheus"
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: never
+logging:
+  level:
+    com.credi.ya: INFO
+    org.springframework: WARN
+    org.springframework.security: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
